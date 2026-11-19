@@ -341,8 +341,9 @@ function envoyer(b){
   if (!verifier()) return;
   const c = charge(); b.disabled = true; b.textContent = 'Envoi en cours…';
   const fini = (ok) => { cur = ETAPES.length - 1; rendre(); const n = document.getElementById('envoi-note'); if (!ok && n) { const corps = Object.entries(c).filter(([k]) => k[0] !== '_' && k !== 'Page').map(([k,v]) => v ? k + ' : ' + v : '').filter(Boolean).join('\n'); n.innerHTML = 'Votre envoi automatique a échoué. <a href="mailto:contact@yelema.ai?subject=' + encodeURIComponent(c._subject) + '&body=' + encodeURIComponent(corps) + '" style="color:var(--violet-deep);font-weight:600">Envoyez-nous vos réponses par email</a>.'; } };
-  fetch('https://formsubmit.co/ajax/contact@yelema.ai', { method:'POST', headers:{'Content-Type':'application/json', Accept:'application/json'}, body: JSON.stringify(c) })
-    .then(r => r.json()).then(x => { if (String(x && x.success) !== 'true') throw 0; fini(true); }).catch(() => fini(false));
+  const tir = () => fetch('https://formsubmit.co/ajax/contact@yelema.ai', { method:'POST', headers:{'Content-Type':'application/json', Accept:'application/json'}, body: JSON.stringify(c) })
+    .then(r => r.json()).then(x => { if (String(x && x.success) !== 'true') throw 0; });
+  tir().catch(() => new Promise(r => setTimeout(r, 1500)).then(tir)).then(() => fini(true)).catch(() => fini(false));
 }
 app.addEventListener('click', e => {
   const b = e.target.closest('button'); if (!b) return;
